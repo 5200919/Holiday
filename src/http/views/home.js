@@ -5,7 +5,6 @@ import {
     ERRORS,
     FIELDS,
     RULES,
-    SAMPLE_ERROR,
     SAMPLE_SINGLE,
     SAMPLE_YEAR,
     SERVICE_DESCRIPTION,
@@ -179,11 +178,6 @@ export function renderHomeView(origin = '') {
     const errorRows = ERRORS.map(
         (error) => `<tr><td><code class="${error[0] === '0' ? 'ok' : 'warn'}">${escapeHtml(error[0])}</code></td>` +
             `<td>${escapeHtml(error[1])}</td><td>${escapeHtml(error[2])}</td></tr>`
-    ).join('');
-
-    const errorTips = ERRORS.map(
-        ([code, message, detail]) => `<li><code class="ec ${code === '0' ? 'ok' : 'warn'}">${escapeHtml(code)}</code>` +
-            `<b>${escapeHtml(message)}</b><span>${escapeHtml(detail)}</span></li>`
     ).join('');
 
     const usageCards = USAGES.map(
@@ -411,14 +405,8 @@ export function renderHomeView(origin = '') {
     <div class="doc-grid">
       <div class="card"><h3 class="h3-inline"><span class="bar"></span>单日对象返回字段</h3>
         <table class="tbl"><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>${fieldRows}</tbody></table>
-        <div class="code-label"><span class="cldot ok"></span>成功响应示例</div>
+        <div class="code-label"><span class="cldot ok"></span>响应示例</div>
         <pre class="doc-code"><code>${highlightJson(SAMPLE_SINGLE)}</code></pre>
-        <div class="code-label"><span class="cldot warn"></span>错误响应示例</div>
-        <pre class="doc-code doc-code-err"><code>${highlightJson(SAMPLE_ERROR)}</code></pre>
-        <div class="err-tips">
-          <div class="err-tips-h">错误码提示</div>
-          <ul class="err-list">${errorTips}</ul>
-        </div>
       </div>
       <div class="card"><h3 class="h3-inline"><span class="bar"></span>错误码与缓存策略</h3>
         <table class="tbl"><thead><tr><th>code</th><th>message</th><th>说明</th></tr></thead><tbody>${errorRows}</tbody></table>

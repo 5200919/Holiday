@@ -100,12 +100,6 @@ export const FIELDS = [
     { name: 'fallback', type: 'boolean', description: '该年份无配置时为 true，仅按周末判断' },
 ];
 
-export const SAMPLE_ERROR = {
-    code: 400,
-    message: '参数错误',
-    data: null,
-};
-
 export const RULES = [
     ['1', '在调休补班表，且 makeup=1', 'makeup_workday', 'true'],
     ['2', '在调休补班表，且 makeup=0', 'weekend', 'false'],
