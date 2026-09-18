@@ -1,3 +1,7 @@
 import { createRoute } from '../../src/http/edgeRoute.js';
 
-export default createRoute('year');
+const handler = createRoute('year');
+
+export default function onRequest(context) {
+    return handler(context);
+}
