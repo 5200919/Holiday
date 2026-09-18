@@ -32,8 +32,7 @@ node/
 │   ├── holiday/check.js          GET /holiday/check
 │   ├── holiday/range.js          GET /holiday/range
 │   ├── holiday/month.js          GET /holiday/month
-│   ├── holiday/year.js           GET /holiday/year
-│   └── [[default]].js            兜底 404
+│   └── holiday/year.js           GET /holiday/year
 ├── server.js                     本地调试用原生 http 服务
 └── test/holiday.test.js          node:test
 ```
@@ -62,7 +61,6 @@ Edge Functions 的路由由 `edge-functions/` 目录结构生成，因此需满�
 | `edge-functions/holiday/range.js` | `/holiday/range` |
 | `edge-functions/holiday/month.js` | `/holiday/month` |
 | `edge-functions/holiday/year.js` | `/holiday/year` |
-| `edge-functions/[[default]].js` | 其余路径（返回 JSON 404） |
 
 处理函数为 `export default function onRequest(context)`，通过 `context.request`（标准 Web `Request`）读取 URL 与查询参数，返回标准 `Response`。
 
