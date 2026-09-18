@@ -1,9 +1,10 @@
 # Holiday（Node / Edge Functions 版）
 
-中国**工作日 / 节假日**查询 API，基于腾讯云 **Makers Edge Functions**（EdgeOne）。零第三方依赖，数据用 JS 模块人工维护，不依赖 MySQL / Redis。
+中国**工作日 / 节假日**查询 API，运行于腾讯云 EdgeOne 边缘函数，并通过**腾讯云 CDN 加速**对外提供服务。零第三方依赖，数据用 JS 模块人工维护，不依赖 MySQL / Redis。
 
-- 入口目录：`edge-functions/`（Makers 自动按目录生成路由）
+- 入口目录：`edge-functions/`（按目录生成路由）
 - 运行时：EdgeOne 边缘函数（V8 isolate，仅 JavaScript）
+- 分发：边缘节点就近命中，静态首页单次返回即完整可交互
 - Node：>= 18（本地调试/测试用）
 
 接口行为与仓库内 PHP 版逐条对齐（字段、`day_type`、`makeup`、降级、中文名、默认当天）。
@@ -24,7 +25,14 @@ node/
 │       ├── apiController.js      纯逻辑，返回 {code,message,data}
 │       ├── edge.js               Web Response / CORS / 缓存策略
 │       ├── edgeRoute.js          Edge Function 路由工厂
-│       └── pages.js              首页 HTML / 用法 JSON / AI Markdown
+│       ├── pages.js              渲染入口（转发 views/ 生成首页）
+│       ├── docsModel.js          静态文档数据（端点/字段/错误码等）
+│       └── views/                首页视图
+│           ├── home.js           页面模板（服务端渲染 + 内联资源）
+│           ├── calendar.js       三年日历 / 统计 / 连休区块
+│           ├── icons.js          节日 SVG 图标（含国旗）
+│           ├── home-css.js       内联样式常量
+│           └── home-js.js        内联脚本常量
 ├── data/holidays/                年度数据（ESM）
 │   ├── 2024.js 2025.js 2026.js
 │   └── index.js                  注册表
@@ -140,6 +148,13 @@ export default {
 ```
 
 已内置 2024 / 2025 / 2026，请按国务院办公厅通知核对增补。
+
+## 首页说明
+
+- `GET /` 返回**自包含 HTML**：样式与脚本以 `views/home-css.js`、`views/home-js.js` 中的字符串常量内联下发。边缘运行环境没有静态资源托管能力，因此不依赖任何外部资源文件。
+- 节假日日历由 `HolidayCalendar` 在**服务端预渲染**，页面所见与 `data/holidays` 及 `/holiday/*` 接口返回完全同源、同结果，前端不再保留第二份判定逻辑。
+- 页面交互（切换日期、在线调试台）统一回查同源 `/holiday/*`，示例中的 Base URL 取自请求 host，本地与线上自动适配。
+- 首页整体约 220 KB（未压缩），远低于单函数 5 MB 代码包上限；经 CDN 压缩后传输量在数十 KB 级。
 
 ## 注意事项
 

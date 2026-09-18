@@ -39,14 +39,44 @@ test('home page is html with absolute urls and all endpoints', () => {
 
     assert.match(html, /^<!DOCTYPE html>/);
     assert.ok(html.includes(`curl "${ORIGIN}/holiday/check?date=2025-10-01"`));
-    assert.ok(html.includes('功能介绍'));
-    assert.ok(html.includes('API 文档'));
+    assert.ok(html.includes('六种核心能力'));
+    assert.ok(html.includes('接口文档'));
     assert.ok(html.includes('/llms.txt'));
     assert.ok(html.includes('/ai.md'));
 
     for (const endpoint of ENDPOINTS) {
         assert.ok(html.includes(endpoint.path), `missing ${endpoint.path}`);
     }
+});
+
+test('home page is self contained without external assets', () => {
+    const html = renderHomePage(ORIGIN);
+
+    assert.ok(!/<link[^>]+rel="stylesheet"/.test(html), 'should not reference external stylesheet');
+    assert.ok(!/<script[^>]+src=/.test(html), 'should not reference external script');
+    assert.ok(html.includes('<style>'), 'css must be inlined');
+    assert.ok(html.includes('<script>'), 'script must be inlined');
+});
+
+test('home page renders every supported year from the shared dataset', () => {
+    const html = renderHomePage(ORIGIN);
+
+    for (const year of SUPPORTED_YEARS) {
+        assert.ok(html.includes(`class="cal-year" data-year="${year}"`), `missing calendar group ${year}`);
+    }
+
+    assert.match(html, /data-today="\d{4}-\d{2}-\d{2}"/);
+    assert.ok(html.includes('t-makeup_workday'), 'makeup workday cells should be rendered');
+    assert.ok(html.includes('hb-mk'), 'blocks should expose their makeup days');
+});
+
+test('home page keeps today card and author credits', () => {
+    const html = renderHomePage(ORIGIN);
+
+    assert.ok(html.includes('id="todayCard"'));
+    assert.ok(html.includes('魏小墨'));
+    assert.ok(html.includes('https://wxm.wang'));
+    assert.ok(html.includes('腾讯云 CDN 加速'));
 });
 
 test('home page escapes html in origin', () => {
