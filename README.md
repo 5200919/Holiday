@@ -89,7 +89,7 @@ Edge Functions 的路由由 `edge-functions/` 目录结构生成，因此需满�
 | `GET /holiday/range` | `start`、`end`（可选）、`makeup` | 区间（含首尾，最多 1000 天） |
 | `GET /holiday/month` | `year`、`month`、`makeup` | 整月 |
 | `GET /holiday/year` | `year` | 全年节假日 + 调休 |
-| `GET /` | — | 功能介绍页面（HTML） |
+| `GET /` | `format`（可选） | 内容协商：浏览器返回功能介绍页（HTML），curl / wget 等命令行客户端返回**当天**判定结果（等价于 `/holiday/check`）；`format=html` / `format=json` 可强制覆盖 |
 | `GET /holiday/` | — | 用法示例 / 端点列表（JSON） |
 | `GET /llms.txt`、`GET /ai.md` | — | AI 接入 Markdown 文档 |
 
@@ -152,6 +152,7 @@ export default {
 ## 首页说明
 
 - `GET /` 返回**自包含 HTML**：样式与脚本以 `views/home-css.js`、`views/home-js.js` 中的字符串常量内联下发。边缘运行环境没有静态资源托管能力，因此不依赖任何外部资源文件。
+- **根路径内容协商**（`src/http/rootRoute.js`）：`Accept` 含 `text/html` 或 UA 非命令行客户端时返回首页；`curl` / `wget` / `python-requests` 等直接返回当天 JSON，方便 `curl https://holiday.wxm.wang/` 一行拿结果。两种响应都带 `Vary: Accept`，避免 CDN 把 JSON 缓存后回给浏览器用户。
 - 节假日日历由 `HolidayCalendar` 在**服务端预渲染**，页面所见与 `data/holidays` 及 `/holiday/*` 接口返回完全同源、同结果，前端不再保留第二份判定逻辑。
 - 页面交互（切换日期、在线调试台）统一回查同源 `/holiday/*`，示例中的 Base URL 取自请求 host，本地与线上自动适配。
 - 首页整体约 220 KB（未压缩），远低于单函数 5 MB 代码包上限；经 CDN 压缩后传输量在数十 KB 级。

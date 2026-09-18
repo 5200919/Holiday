@@ -9,24 +9,26 @@ export function preflightResponse() {
     return new Response(null, { status: 204, headers: { ...CORS_HEADERS } });
 }
 
-export function jsonResponse(payload, { status = 200, cache = 'no-store' } = {}) {
+export function jsonResponse(payload, { status = 200, cache = 'no-store', headers = {} } = {}) {
     return new Response(JSON.stringify(payload), {
         status,
         headers: {
             'Content-Type': 'application/json; charset=utf-8',
             'Cache-Control': cache,
             ...CORS_HEADERS,
+            ...headers,
         },
     });
 }
 
-export function htmlResponse(html, { status = 200, cache = 'public, max-age=3600' } = {}) {
+export function htmlResponse(html, { status = 200, cache = 'public, max-age=3600', headers = {} } = {}) {
     return new Response(html, {
         status,
         headers: {
             'Content-Type': 'text/html; charset=utf-8',
             'Cache-Control': cache,
             ...CORS_HEADERS,
+            ...headers,
         },
     });
 }

@@ -5,6 +5,7 @@ import {
     ERRORS,
     FIELDS,
     RULES,
+    SAMPLE_ERROR,
     SAMPLE_SINGLE,
     SAMPLE_YEAR,
     SERVICE_DESCRIPTION,
@@ -15,6 +16,7 @@ import {
 import { HOME_CSS } from './home-css.js';
 import { HOME_SCRIPT } from './home-js.js';
 import { buildYearModel, renderCalendarSections } from './calendar.js';
+import { escapeHtml, highlightJson } from './highlight.js';
 
 const AUTHOR = '魏小墨';
 const AUTHOR_SITE = 'https://wxm.wang';
@@ -51,16 +53,8 @@ const FAQs = [
     ['为什么调休补班默认是工作日？', '因为国务院安排的补班日在实际考勤口径中确实需要上班。若你的业务希望把补班周末视作休息，传 makeup=0 即可切换。'],
     ['可以商用吗？有没有 SDK？', '可以直接商用。由于接口设计足够简单，本服务不提供 SDK——任意语言的 HTTP 客户端都能在几行内完成封装，页面「一分钟接入」中给出了多门语言的示例。'],
     ['时区怎么处理？有夏令时吗？', '所有日期计算固定按 UTC+8 处理，中国全境不实行夏令时，因此全年判定结果稳定，无需额外校正。'],
+    ['直接访问根路径会返回什么？', '按请求头 Accept 自动协商：浏览器打开返回本页；用 curl、wget 等命令行工具访问则直接返回当天的判定结果，等价于调用 /holiday/check。需要固定格式时追加 ?format=html 或 ?format=json。'],
 ];
-
-function escapeHtml(value) {
-    return String(value)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-}
 
 function inlineJson(value) {
     return JSON.stringify(value).replace(/</g, '\\u003c').replace(/>/g, '\\u003e');
@@ -185,6 +179,11 @@ export function renderHomeView(origin = '') {
     const errorRows = ERRORS.map(
         (error) => `<tr><td><code class="${error[0] === '0' ? 'ok' : 'warn'}">${escapeHtml(error[0])}</code></td>` +
             `<td>${escapeHtml(error[1])}</td><td>${escapeHtml(error[2])}</td></tr>`
+    ).join('');
+
+    const errorTips = ERRORS.map(
+        ([code, message, detail]) => `<li><code class="ec ${code === '0' ? 'ok' : 'warn'}">${escapeHtml(code)}</code>` +
+            `<b>${escapeHtml(message)}</b><span>${escapeHtml(detail)}</span></li>`
     ).join('');
 
     const usageCards = USAGES.map(
@@ -412,10 +411,19 @@ export function renderHomeView(origin = '') {
     <div class="doc-grid">
       <div class="card"><h3 class="h3-inline"><span class="bar"></span>单日对象返回字段</h3>
         <table class="tbl"><thead><tr><th>字段</th><th>类型</th><th>说明</th></tr></thead><tbody>${fieldRows}</tbody></table>
-        <pre class="doc-code"><code>${escapeHtml(JSON.stringify(SAMPLE_SINGLE, null, 2))}</code></pre></div>
+        <div class="code-label"><span class="cldot ok"></span>成功响应示例</div>
+        <pre class="doc-code"><code>${highlightJson(SAMPLE_SINGLE)}</code></pre>
+        <div class="code-label"><span class="cldot warn"></span>错误响应示例</div>
+        <pre class="doc-code doc-code-err"><code>${highlightJson(SAMPLE_ERROR)}</code></pre>
+        <div class="err-tips">
+          <div class="err-tips-h">错误码提示</div>
+          <ul class="err-list">${errorTips}</ul>
+        </div>
+      </div>
       <div class="card"><h3 class="h3-inline"><span class="bar"></span>错误码与缓存策略</h3>
         <table class="tbl"><thead><tr><th>code</th><th>message</th><th>说明</th></tr></thead><tbody>${errorRows}</tbody></table>
-        <p class="note">带明确 <code>date</code> / <code>start</code> / <code>end</code> / <code>year</code> 的请求返回 <code>Cache-Control: public, max-age=86400</code>；依赖「当天」的请求返回 <code>no-store</code>。</p></div>
+        <p class="note">带明确 <code>date</code> / <code>start</code> / <code>end</code> / <code>year</code> 的请求返回 <code>Cache-Control: public, max-age=86400</code>；依赖「当天」的请求返回 <code>no-store</code>。</p>
+        <p class="note">根路径 <code>/</code> 按 <code>Accept</code> 协商：浏览器返回本页，<code>curl</code> / <code>wget</code> 等命令行客户端直接返回当天判定结果（等价于 <code>/holiday/check</code>）。</p></div>
     </div>
   </div>
 </section>

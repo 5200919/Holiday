@@ -100,6 +100,12 @@ export const FIELDS = [
     { name: 'fallback', type: 'boolean', description: '该年份无配置时为 true，仅按周末判断' },
 ];
 
+export const SAMPLE_ERROR = {
+    code: 400,
+    message: '参数错误',
+    data: null,
+};
+
 export const RULES = [
     ['1', '在调休补班表，且 makeup=1', 'makeup_workday', 'true'],
     ['2', '在调休补班表，且 makeup=0', 'weekend', 'false'],
@@ -183,6 +189,7 @@ ${params}
 - **数据覆盖年份**：${years}
 - **发现入口**：\`GET ${base}/holiday/\` 返回可用端点列表（JSON）
 - **在线文档**：\`${base}/llms.txt\` 与 \`${base}/ai.md\`
+- **根路径**：\`GET ${base}/\` 按 \`Accept\` 协商——浏览器返回功能介绍页，命令行客户端（curl / wget 等）直接返回当天判定结果，等价于 \`/holiday/check\`；追加 \`?format=json\` 可强制获取 JSON
 
 ## 统一响应结构
 

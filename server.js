@@ -2,6 +2,7 @@ import http from 'node:http';
 import { ApiController } from './src/http/apiController.js';
 import { statusFromCode } from './src/http/edge.js';
 import { renderAiDoc, renderHomePage, usagePayload } from './src/http/pages.js';
+import { prefersHtml, rootPayload } from './src/http/rootRoute.js';
 
 const port = Number(process.env.PORT || 443);
 const controller = new ApiController();
@@ -16,8 +17,8 @@ const server = http.createServer((request, response) => {
         query[key] = value;
     });
 
-    const html = (body) => {
-        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
+    const html = (body, extra = {}) => {
+        response.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', ...extra });
         response.end(body);
     };
 
@@ -27,7 +28,12 @@ const server = http.createServer((request, response) => {
     };
 
     if (path === '/') {
-        return html(renderHomePage(origin));
+        // 浏览器返回首页；curl / wget 等直接返回当天判定结果
+        if (prefersHtml(request.headers, query)) {
+            return html(renderHomePage(origin), { Vary: 'Accept' });
+        }
+
+        return json(rootPayload(), { Vary: 'Accept', 'Cache-Control': 'no-store' });
     }
 
     if (path === '/holiday') {
@@ -45,8 +51,11 @@ const server = http.createServer((request, response) => {
 
     return json(payload);
 
-    function json(payload) {
-        response.writeHead(statusFromCode(payload.code), { 'Content-Type': 'application/json; charset=utf-8' });
+    function json(payload, extra = {}) {
+        response.writeHead(statusFromCode(payload.code), {
+            'Content-Type': 'application/json; charset=utf-8',
+            ...extra,
+        });
         response.end(JSON.stringify(payload));
     }
 });
