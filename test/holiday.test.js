@@ -71,6 +71,23 @@ test('non-existent date throws', () => {
     assert.throws(() => calendar.check('2025-02-30'), InvalidDateError);
 });
 
+test('compact date format is accepted', () => {
+    const result = calendar.check('20251001');
+    assert.equal(result.date, '2025-10-01');
+    assert.equal(result.isWorkday, false);
+    assert.equal(result.holidayName, '国庆节');
+});
+
+test('compact makeup date with default makeup', () => {
+    const result = calendar.check('20250928');
+    assert.equal(result.date, '2025-09-28');
+    assert.equal(result.isWorkday, true);
+});
+
+test('compact non-existent date throws', () => {
+    assert.throws(() => calendar.check('20250230'), InvalidDateError);
+});
+
 test('range is inclusive', () => {
     const results = calendar.checkRange('2025-10-01', '2025-10-08');
     assert.equal(results.length, 8);

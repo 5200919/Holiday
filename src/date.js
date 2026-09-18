@@ -1,6 +1,7 @@
 import { InvalidDateError } from './exception.js';
 
 const DATE_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
+const COMPACT_DATE_RE = /^(\d{4})(\d{2})(\d{2})$/;
 
 const MS_PER_DAY = 86400000;
 
@@ -13,13 +14,13 @@ export function todayString(now = new Date()) {
 
 export function normalizeDate(date) {
     if (typeof date !== 'string') {
-        throw new InvalidDateError(`日期格式非法：${String(date)}，应为 Y-m-d`);
+        throw new InvalidDateError(`日期格式非法：${String(date)}，应为 Y-m-d 或 Ymd`);
     }
 
-    const match = DATE_RE.exec(date);
+    const match = DATE_RE.exec(date) ?? COMPACT_DATE_RE.exec(date);
 
     if (match === null) {
-        throw new InvalidDateError(`日期格式非法：${date}，应为 Y-m-d`);
+        throw new InvalidDateError(`日期格式非法：${date}，应为 Y-m-d 或 Ymd`);
     }
 
     const year = Number(match[1]);
@@ -31,7 +32,7 @@ export function normalizeDate(date) {
         throw new InvalidDateError(`日期不存在：${date}`);
     }
 
-    return date;
+    return `${match[1]}-${match[2]}-${match[3]}`;
 }
 
 export function isWeekend(date) {

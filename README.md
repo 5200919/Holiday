@@ -76,6 +76,8 @@ Edge Functions 的路由由 `edge-functions/` 目录结构生成，因此需满�
 | `GET /holiday/year` | `year` | 全年节假日 + 调休 |
 | `GET /` | — | 健康检查 |
 
+`date` / `start` / `end` 支持 `Y-m-d`（`2026-09-18`）与 `Ymd`（`20260918`）两种格式，返回的 `date` 统一为 `Y-m-d`。
+
 示例：
 
 ```
