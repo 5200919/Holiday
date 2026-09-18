@@ -20,6 +20,34 @@ export function jsonResponse(payload, { status = 200, cache = 'no-store' } = {})
     });
 }
 
+export function htmlResponse(html, { status = 200, cache = 'public, max-age=3600' } = {}) {
+    return new Response(html, {
+        status,
+        headers: {
+            'Content-Type': 'text/html; charset=utf-8',
+            'Cache-Control': cache,
+            ...CORS_HEADERS,
+        },
+    });
+}
+
+export function markdownResponse(markdown, { status = 200, cache = 'public, max-age=3600' } = {}) {
+    return new Response(markdown, {
+        status,
+        headers: {
+            'Content-Type': 'text/markdown; charset=utf-8',
+            'Cache-Control': cache,
+            ...CORS_HEADERS,
+        },
+    });
+}
+
+export function requestOrigin(request) {
+    const url = new URL(request.url);
+
+    return `${url.protocol}//${url.host}`;
+}
+
 export function queryFromRequest(request) {
     const url = new URL(request.url);
     const query = {};

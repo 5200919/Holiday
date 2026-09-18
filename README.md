@@ -23,12 +23,16 @@ node/
 │   └── http/
 │       ├── apiController.js      纯逻辑，返回 {code,message,data}
 │       ├── edge.js               Web Response / CORS / 缓存策略
-│       └── edgeRoute.js          Edge Function 路由工厂
+│       ├── edgeRoute.js          Edge Function 路由工厂
+│       └── pages.js              首页 HTML / 用法 JSON / AI Markdown
 ├── data/holidays/                年度数据（ESM）
 │   ├── 2024.js 2025.js 2026.js
 │   └── index.js                  注册表
 ├── edge-functions/               ===== 部署入口 =====
-│   ├── index.js                  GET /
+│   ├── index.js                  GET /            功能介绍 HTML 页面
+│   ├── llms.txt.js               GET /llms.txt    AI 接入 Markdown
+│   ├── ai.md.js                  GET /ai.md        同上 .md 别名
+│   ├── holiday/index.js          GET /holiday/     用法示例 JSON
 │   ├── holiday/check.js          GET /holiday/check
 │   ├── holiday/range.js          GET /holiday/range
 │   ├── holiday/month.js          GET /holiday/month
@@ -54,13 +58,16 @@ Edge Functions 的路由由 `edge-functions/` 目录结构生成，因此需满�
 
 路由映射：
 
-| 文件 | 路由 |
-| --- | --- |
-| `edge-functions/index.js` | `/` |
-| `edge-functions/holiday/check.js` | `/holiday/check` |
-| `edge-functions/holiday/range.js` | `/holiday/range` |
-| `edge-functions/holiday/month.js` | `/holiday/month` |
-| `edge-functions/holiday/year.js` | `/holiday/year` |
+| 文件 | 路由 | 说明 |
+| --- | --- | --- |
+| `edge-functions/index.js` | `/` | 功能介绍 HTML 页面 |
+| `edge-functions/holiday/index.js` | `/holiday/` | 用法示例（JSON 端点列表） |
+| `edge-functions/holiday/check.js` | `/holiday/check` | 单日查询 |
+| `edge-functions/holiday/range.js` | `/holiday/range` | 区间查询 |
+| `edge-functions/holiday/month.js` | `/holiday/month` | 整月查询 |
+| `edge-functions/holiday/year.js` | `/holiday/year` | 全年查询 |
+| `edge-functions/llms.txt.js` | `/llms.txt` | AI 接入 Markdown 文档 |
+| `edge-functions/ai.md.js` | `/ai.md` | 同上的 `.md` 别名 |
 
 处理函数为 `export default function onRequest(context)`，通过 `context.request`（标准 Web `Request`）读取 URL 与查询参数，返回标准 `Response`。
 
@@ -74,7 +81,9 @@ Edge Functions 的路由由 `edge-functions/` 目录结构生成，因此需满�
 | `GET /holiday/range` | `start`、`end`（可选）、`makeup` | 区间（含首尾，最多 1000 天） |
 | `GET /holiday/month` | `year`、`month`、`makeup` | 整月 |
 | `GET /holiday/year` | `year` | 全年节假日 + 调休 |
-| `GET /` | — | 健康检查 |
+| `GET /` | — | 功能介绍页面（HTML） |
+| `GET /holiday/` | — | 用法示例 / 端点列表（JSON） |
+| `GET /llms.txt`、`GET /ai.md` | — | AI 接入 Markdown 文档 |
 
 `date` / `start` / `end` 支持 `Y-m-d`（`2026-09-18`）与 `Ymd`（`20260918`）两种格式，返回的 `date` 统一为 `Y-m-d`。
 
