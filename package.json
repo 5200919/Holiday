@@ -1,0 +1,15 @@
+{
+    "name": "5200919-holiday-edge",
+    "version": "1.0.0",
+    "description": "中国工作日 / 节假日查询 Edge Functions API（腾讯云 Makers / EdgeOne）",
+    "type": "module",
+    "private": true,
+    "license": "MIT",
+    "engines": {
+        "node": ">=18"
+    },
+    "scripts": {
+        "dev": "node server.js",
+        "test": "node --test"
+    }
+}
