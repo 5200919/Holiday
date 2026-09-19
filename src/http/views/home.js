@@ -19,6 +19,17 @@ import { escapeHtml, highlightJson } from './highlight.js';
 
 const AUTHOR = '魏小墨';
 const AUTHOR_SITE = 'https://wxm.wang';
+/** 日历最多展示的年分数：年份较多时只保留最新的若干年，避免页面无限膨胀。 */
+const MAX_CALENDAR_YEARS = 9;
+
+/** 年份较多时改为区间写法，避免「2015 · 2016 · …」撑爆版式。 */
+function formatYears(years) {
+    if (years.length <= 5) {
+        return years.join(' · ');
+    }
+
+    return `${years[0]}–${years[years.length - 1]}`;
+}
 const WEEK_CN = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
 
 const FEATURES = [
@@ -153,8 +164,13 @@ export function renderHomeView(origin = '') {
     const today = todayString();
     const currentYear = Number(today.slice(0, 4));
 
-    const { html: calendarHtml, models } = renderCalendarSections(calendar, SUPPORTED_YEARS, today);
-    const statsYear = models.has(currentYear) ? currentYear : SUPPORTED_YEARS[SUPPORTED_YEARS.length - 1];
+    // 年份全部来自 data/holidays 注册表，新增年份无需改页面代码
+    const allYears = SUPPORTED_YEARS.map(Number).sort((a, b) => a - b);
+    const calendarYears = allYears.slice().sort((a, b) => b - a).slice(0, MAX_CALENDAR_YEARS);
+    const defaultYear = calendarYears.includes(currentYear) ? currentYear : calendarYears[0];
+
+    const { html: calendarHtml, models } = renderCalendarSections(calendar, calendarYears, today);
+    const statsYear = models.has(currentYear) ? currentYear : calendarYears[0];
     const statsModel = models.get(statsYear) ?? buildYearModel(calendar, statsYear, today);
 
     const featureCards = FEATURES.map(
@@ -195,8 +211,14 @@ export function renderHomeView(origin = '') {
       </div>`
     ).join('');
 
-    const yearTabs = SUPPORTED_YEARS.map((year) => `<button data-year="${year}">${year}</button>`).join('');
-    const yearsText = SUPPORTED_YEARS.join(' · ');
+    // 选项卡从最新年份开始向左递减；年份较多时只保留最新的 MAX_CALENDAR_YEARS 个
+    const yearTabs = calendarYears
+        .map((year) => `<button data-year="${year}"${year === defaultYear ? ' class="active"' : ''}>${year}</button>`)
+        .join('');
+    const yearHint = allYears.length > calendarYears.length
+        ? `<span class="cal-hint">共 ${allYears.length} 年数据，此处展示最新 ${calendarYears.length} 年</span>`
+        : '';
+    const yearsText = formatYears(allYears);
 
     const heroCommand = `curl "${escapeHtml(`${normalizeOrigin(origin)}/holiday/check?date=2026-10-01`)}"`;
 
